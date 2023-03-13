@@ -141,8 +141,15 @@ fn copy_rename_template(root: &Path, destination: &Path) {
     println!("Template copied successfully to {:?}", new_file_path);
 }
 
+fn press_enter_to_continue() {
+    println!("Press enter to exit...");
+    let stdin = io::stdin();
+    let _ = stdin.read_line(&mut String::new());
+}
+
 fn main() {
     let pcn_root = create_or_find_pcn_directory();
     let pcn_case = create_pcn_case(&pcn_root);
     create_affected_parts_directory(&pcn_case, &pcn_root);
+    press_enter_to_continue();
 }

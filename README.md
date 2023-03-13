@@ -71,7 +71,6 @@ Documents/
 
 - On Windows: `C:\Users\<username>\Documents\PCN`.
 - On Linux: `$HOME/Documents/PCN`.
-- On Mac: `/Users/<username>/Documents`.
 
 If this PCN directory does not exist, the program will ask you if you want to
 create it. As of now, this is the PATH I chosed for everything to be stored in, so
