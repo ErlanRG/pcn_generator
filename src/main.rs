@@ -88,7 +88,7 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
         .expect("Failed to read input");
 
     loop {
-        let values: Vec<&str> = input.trim().split(',').collect();
+        let values: Vec<&str> = input.trim().split(',').map(|t| t.trim()).collect();
         let unique_values: HashSet<_> = values.iter().collect();
 
         if unique_values.len() == values.len() {
