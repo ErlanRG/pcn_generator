@@ -8,7 +8,7 @@
 
  Please bear with me 
 
-Use this as a productivity tool.
+Use this as a productivity tool and not as part of the official process.
 
 This project has two main goals in mind:
 
@@ -22,9 +22,6 @@ This project has two main goals in mind:
 
 Because of these two reasons, you may find one or two bugs with the program.
 If you do, feel free to report the issues you encounter so I can work on the patches.
-
-However, and since NO ONE asked me to this and it is not an official Teradyne
-process, I am **_not_** forced to keep developing this tool to comply with all the demands.
 
 ## Motivation
 
@@ -40,18 +37,71 @@ of time you should spend on this over and over again.
 
 In order to improve the time of invested in a single case, I have created this
 program that automatically do this for you.
-And the good thing is it only requires a few steps to get the PCN environment
-set up in your computer.
 
 ## Usage
 
-Using this tool should be pretty straightforward. Your only inputs are:
+### TL;DR
 
-1. The PCN case number: you should be able to find it in Teamcenter.
-2. List of affected parts (should be formatted. More on this later).
+The program will create a PCN structure for you inside the Documents directory
+and automatically place the `PCN_template.xlsx` file (for CEs) inside every
+single affected part by the PCN.
 
-The default directory in which the new PCN directories will be created is the following:
-`C:\Users\<your_user>\Documents\PCN`. If this path is not in your computer, this program
-will automatically create it for you.
+Should look something like this:
+
+```
+Documents/
+├─ PCN/
+│  ├─ PCN_template.xlsx
+│  ├─ PCN00002/
+│  │  ├─ affected_part1/
+│  │  │  ├─ affected_part1.xlsx
+│  ├─ PCN00001/
+│  │  ├─ affected_part1/
+│  │  │  ├─ affected_part1.xlsx
+│  │  ├─ affected_part2/
+│  │  │  ├─ affected_part2.xlsx
+│  │  ├─ affected_part3/
+│  │  │  ├─ affected_part3.xlsx
+```
+
+### Detailed explanation. (Please read).
+
+1. The program will first check your Documents directory for a subdirectory called
+   "PCN". This is where all the PCN subdirectories will be created.
+
+- On Windows: `C:\Users\<username>\Documents\PCN`.
+- On Linux: `$HOME/Documents/PCN`.
+- On Mac: `/Users/<username>/Documents`.
+
+If this PCN directory does not exist, the program will ask you if you want to
+create it. As of now, this is the PATH I chosed for everything to be stored in, so
+if you decide to not create the directory, then the program will exit.
+
+2. The program will then ask you for the PCN case number. This is usually something
+   like "PCNXXXXXX". You can call it whatever you like, but this is usually the
+   most eficient way to identify a case. If the PCN case already exist, then
+   the program will print an error message and won't create the new directory.
+
+3. After successfully creating the PCN case, it will ask you to enter a list of
+   affected parts. Now, it is important to point-out that the list should be in a
+   **comma-separated format.** Should look like something like this:
+
+`RES1234, RES2345, RES3454`
+
+Don't worry about the whitespaces, it will handle them automatically.
+The program will ask you again for this input if it finds a duplicate in the
+list.
+
+4. As seen on the structure shown above, it is recommended to have a
+   `PCN_template.xlsx` file for CEs inside `C:\Users\<username>\Documents\PCN`.
+   This is because the program will look for this file and copy it inside every
+   single affected part directory. Then, it will rename this file as the
+   affected part with the `.xlsx` extension.
+
+You can now work on the PCNs that should be ready to upload once finished
 
 ## TODO list
+
+- [ ] Ask the user for the desired location different than `Documents/PCN`
+- [ ] Do not exit when the PCN case number is duplicated. Instead, prompt to enter it again.
+- [ ] Include the `PCN_template.xlsx` file along with the installation and place it inside the PCN directory.
