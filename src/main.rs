@@ -123,12 +123,6 @@ fn press_enter_to_continue() {
     let _ = stdin.read_line(&mut String::new());
 }
 
-fn press_enter_to_continue() {
-    println!("Press enter to exit...");
-    let stdin = io::stdin();
-    let _ = stdin.read_line(&mut String::new());
-}
-
 fn main() {
     let pcn_root = create_or_find_pcn_directory();
     let pcn_case = create_pcn_case(&pcn_root);
