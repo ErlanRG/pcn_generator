@@ -1,5 +1,5 @@
 use std::collections::HashSet;
-use std::fs::{self, create_dir, metadata};
+use std::fs::{self, create_dir};
 use std::io::{self, stdin, stdout, Write};
 use std::path::{Path, PathBuf};
 
@@ -10,11 +10,8 @@ fn create_pcn_case(pcn_path: &Path) -> PathBuf {
 
     loop {
         let mut input = String::new();
-        match stdin().read_line(&mut input) {
-            Ok(_) => (),
-            Err(e) => {
-                eprintln!("Error reading input: {}", e);
-            }
+        if let Err(e) = stdin().read_line(&mut input) {
+            eprintln!("Error reading input: {}", e);
         };
 
         let pcn_case = input.trim();
@@ -45,7 +42,7 @@ fn create_or_find_pcn_directory() -> PathBuf {
     let pcn_path = documents_path.join("PCN");
 
     // Check if the PCN directory exists and create it if necessary
-    if metadata(&pcn_path).is_ok() {
+    if pcn_path.exists() {
         println!("PCN directory found at \"{}\".", pcn_path.display());
     } else {
         print!(
@@ -55,11 +52,8 @@ fn create_or_find_pcn_directory() -> PathBuf {
         stdout().flush().expect("Failed to flush stdout.");
 
         let mut input = String::new();
-        match stdin().read_line(&mut input) {
-            Ok(_) => (),
-            Err(error) => {
-                eprintln!("Error reading the input: {}", error);
-            }
+        if let Err(e) = stdin().read_line(&mut input) {
+            eprintln!("Error reading the input: {}", e);
         }
 
         match input.trim().to_lowercase().as_str() {
@@ -89,11 +83,8 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
     println!("Please enter the affected parts (comma-separated values): ");
 
     let mut input = String::new();
-    match stdin().read_line(&mut input) {
-        Ok(_) => (),
-        Err(error) => {
-            eprintln!("Error reading the input: {}", error);
-        }
+    if let Err(e) = stdin().read_line(&mut input) {
+        eprintln!("Error reading the input: {}", e);
     }
 
     loop {
@@ -102,7 +93,8 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
 
         if unique_values.len() == values.len() {
             for value in values {
-                copy_rename_template(pcn_root, pcn_case, &value).unwrap();
+                copy_rename_template(pcn_root, pcn_case, &value)
+                    .expect("Failed at copy_rename_template()");
             }
 
             println!("Files created successfully at \"{}\".", pcn_case.display());
@@ -110,11 +102,8 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
         } else {
             println!("There are duplicated affected parts. Try again with unique values.");
             input.clear();
-            match stdin().read_line(&mut input) {
-                Ok(_) => (),
-                Err(error) => {
-                    eprintln!("Error reading the input: {}", error);
-                }
+            if let Err(e) = stdin().read_line(&mut input) {
+                eprintln!("Error reading the input: {}", e);
             }
         }
     }
@@ -125,14 +114,7 @@ fn copy_rename_template(root: &Path, destination: &Path, name: &str) -> Result<(
     let mut dest = PathBuf::from(destination);
     dest.push(format!("{}.xlsx", name));
 
-    match fs::copy(&source, &dest) {
-        Ok(_) => Ok(()),
-
-        Err(e) => {
-            println!("Error copying file: {}", e);
-            Err(e)
-        }
-    }
+    fs::copy(&source, &dest).map(|_| ())
 }
 
 fn press_enter_to_continue() {
