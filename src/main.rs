@@ -4,37 +4,37 @@ use std::io::{self, stdin, stdout, Write};
 use std::path::{Path, PathBuf};
 
 fn create_pcn_case(pcn_path: &Path) -> PathBuf {
-    // Ask the user for a PCN name
-    print!("Enter the PCN name: ");
-    stdout().flush().unwrap();
+    // Ask the user for the PCN name
+    println!("Enter the PCN case number: ");
+    stdout().flush().expect("Failed to flush stdout.");
 
-    let mut input = String::new();
-    match stdin().read_line(&mut input) {
-        Ok(_) => (),
-        Err(error) => {
-            eprintln!("Error reading the input: {}", error);
+    loop {
+        let mut input = String::new();
+        match stdin().read_line(&mut input) {
+            Ok(_) => (),
+            Err(e) => {
+                eprintln!("Error reading input: {}", e);
+            }
+        };
+
+        let pcn_case = input.trim();
+
+        let pcn_case_dir = pcn_path.join(pcn_case);
+
+        if create_dir(&pcn_case_dir).is_ok() {
+            println!(
+                "Directory created successfully at \"{}\".",
+                pcn_case_dir.display()
+            );
+            return pcn_case_dir;
+        } else {
+            println!(
+                "{} already exist. Failed to create directory.",
+                pcn_case_dir.display()
+            );
+            println!("\nEnter a valid PCN case number: ");
         }
     }
-
-    let pcn_name = input.trim();
-
-    // Create the PCN directory inside the PCN path
-    let pcn_dir = pcn_path.join(pcn_name);
-
-    if create_dir(&pcn_dir).is_ok() {
-        println!(
-            "Directory created successfully at \"{}\".",
-            pcn_dir.display()
-        );
-    } else {
-        println!(
-            "{} already exist. Failed to create directory.",
-            pcn_dir.display()
-        );
-        std::process::exit(1);
-    }
-
-    pcn_dir
 }
 
 fn create_or_find_pcn_directory() -> PathBuf {
@@ -52,7 +52,7 @@ fn create_or_find_pcn_directory() -> PathBuf {
             "PCN directory not found at \"{}\". Create it? (y/n): ",
             pcn_path.display()
         );
-        stdout().flush().unwrap();
+        stdout().flush().expect("Failed to flush stdout.");
 
         let mut input = String::new();
         match stdin().read_line(&mut input) {
