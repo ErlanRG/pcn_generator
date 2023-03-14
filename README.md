@@ -43,8 +43,8 @@ program that automatically do this for you.
 ### TL;DR
 
 The program will create a PCN structure for you inside the Documents directory
-and automatically place the `PCN_template.xlsx` file (for CEs) inside every
-single affected part by the PCN.
+and automatically place the `PCN_template.xlsx` file (for CEs) inside the new
+PCN case directory.
 
 Should look something like this:
 
@@ -53,15 +53,11 @@ Documents/
 ├─ PCN/
 │  ├─ PCN_template.xlsx
 │  ├─ PCN00002/
-│  │  ├─ affected_part1/
-│  │  │  ├─ affected_part1.xlsx
+│  │  ├─ affected_part1.xlsx
 │  ├─ PCN00001/
-│  │  ├─ affected_part1/
-│  │  │  ├─ affected_part1.xlsx
-│  │  ├─ affected_part2/
-│  │  │  ├─ affected_part2.xlsx
-│  │  ├─ affected_part3/
-│  │  │  ├─ affected_part3.xlsx
+│  │  ├─ affected_part1.xlsx
+│  │  ├─ affected_part2.xlsx
+│  │  ├─ affected_part3.xlsx
 ```
 
 ### Detailed explanation. (Please read).
@@ -74,12 +70,13 @@ Documents/
 
 If this PCN directory does not exist, the program will ask you if you want to
 create it. As of now, this is the PATH I chosed for everything to be stored in, so
-if you decide to not create the directory, then the program will exit.
+**if you decide to not create the directory, then the program will exit.**
 
 2. The program will then ask you for the PCN case number. This is usually something
    like "PCNXXXXXX". You can call it whatever you like, but this is usually the
    most eficient way to identify a case. If the PCN case already exist, then
    the program will print an error message and won't create the new directory.
+   Instead, it will ask you again for a valid PCN case number.
 
 3. After successfully creating the PCN case, it will ask you to enter a list of
    affected parts. Now, it is important to point-out that the list should be in a
@@ -93,14 +90,13 @@ list.
 
 4. As seen on the structure shown above, it is recommended to have a
    `PCN_template.xlsx` file for CEs inside `C:\Users\<username>\Documents\PCN`.
-   This is because the program will look for this file and copy it inside every
-   single affected part directory. Then, it will rename this file as the
-   affected part with the `.xlsx` extension.
+   This is because the program will look for this file and make a copy of the
+   file for every single affected inside the PCN case. It also renames each file
+   as the affected part number.
 
 You can now work on the PCNs that should be ready to upload once finished
 
 ## TODO list
 
-- [ ] Ask the user for the desired location different than `Documents/PCN`
-- [ ] Do not exit when the PCN case number is duplicated. Instead, prompt to enter it again.
+- [x] Do not exit when the PCN case number is duplicated. Instead, prompt to enter it again.
 - [ ] Include the `PCN_template.xlsx` file along with the installation and place it inside the PCN directory.

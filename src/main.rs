@@ -1,37 +1,37 @@
 use std::collections::HashSet;
-use std::fs::{self, create_dir, metadata};
+use std::fs::{self, create_dir};
 use std::io::{self, stdin, stdout, Write};
 use std::path::{Path, PathBuf};
 
 fn create_pcn_case(pcn_path: &Path) -> PathBuf {
-    // Ask the user for a PCN name
-    print!("Enter the PCN name: ");
-    stdout().flush().unwrap();
+    // Ask the user for the PCN name
+    println!("Enter the PCN case number: ");
+    stdout().flush().expect("Failed to flush stdout.");
 
-    let mut input = String::new();
-    stdin()
-        .read_line(&mut input)
-        .expect("Could not read user input.");
+    loop {
+        let mut input = String::new();
+        if let Err(e) = stdin().read_line(&mut input) {
+            eprintln!("Error reading input: {}", e);
+        };
 
-    let pcn_name = input.trim();
+        let pcn_case = input.trim();
 
-    // Create the PCN directory inside the PCN path
-    let pcn_dir = pcn_path.join(pcn_name);
+        let pcn_case_dir = pcn_path.join(pcn_case);
 
-    if create_dir(&pcn_dir).is_ok() {
-        println!(
-            "Directory created successfully at \"{}\".",
-            pcn_dir.display()
-        );
-    } else {
-        println!(
-            "{} already exist. Failed to create directory.",
-            pcn_dir.display()
-        );
-        std::process::exit(1);
+        if create_dir(&pcn_case_dir).is_ok() {
+            println!(
+                "Directory created successfully at \"{}\".",
+                pcn_case_dir.display()
+            );
+            return pcn_case_dir;
+        } else {
+            println!(
+                "{} already exist. Failed to create directory.",
+                pcn_case_dir.display()
+            );
+            println!("\nEnter a valid PCN case number: ");
+        }
     }
-
-    pcn_dir
 }
 
 fn create_or_find_pcn_directory() -> PathBuf {
@@ -42,19 +42,19 @@ fn create_or_find_pcn_directory() -> PathBuf {
     let pcn_path = documents_path.join("PCN");
 
     // Check if the PCN directory exists and create it if necessary
-    if metadata(&pcn_path).is_ok() {
+    if pcn_path.exists() {
         println!("PCN directory found at \"{}\".", pcn_path.display());
     } else {
         print!(
             "PCN directory not found at \"{}\". Create it? (y/n): ",
             pcn_path.display()
         );
-        stdout().flush().unwrap();
+        stdout().flush().expect("Failed to flush stdout.");
 
         let mut input = String::new();
-        stdin()
-            .read_line(&mut input)
-            .expect("Could not read user input.");
+        if let Err(e) = stdin().read_line(&mut input) {
+            eprintln!("Error reading the input: {}", e);
+        }
 
         match input.trim().to_lowercase().as_str() {
             "y" | "yes" => {
@@ -83,9 +83,9 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
     println!("Please enter the affected parts (comma-separated values): ");
 
     let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read input");
+    if let Err(e) = stdin().read_line(&mut input) {
+        eprintln!("Error reading the input: {}", e);
+    }
 
     loop {
         let values: Vec<&str> = input.trim().split(',').map(|t| t.trim()).collect();
@@ -93,52 +93,34 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
 
         if unique_values.len() == values.len() {
             for value in values {
-                let affected_path = pcn_case.join(value);
-                if create_dir(&affected_path).is_ok() {
-                    println!(
-                        "PCN directory created successfully at \"{}\".",
-                        affected_path.display()
-                    );
-
-                    copy_rename_template(&pcn_root, &affected_path);
-                }
+                copy_rename_template(pcn_root, pcn_case, &value)
+                    .expect("Failed at copy_rename_template()");
             }
+
+            println!("Files created successfully at \"{}\".", pcn_case.display());
             break;
         } else {
             println!("There are duplicated affected parts. Try again with unique values.");
             input.clear();
-            io::stdin()
-                .read_line(&mut input)
-                .expect("Failed to read input");
+            if let Err(e) = stdin().read_line(&mut input) {
+                eprintln!("Error reading the input: {}", e);
+            }
         }
     }
 }
 
-fn copy_rename_template(root: &Path, destination: &Path) {
-    let source_file_path = root.join("PCN_template.xlsx");
+fn copy_rename_template(root: &Path, destination: &Path, name: &str) -> Result<(), io::Error> {
+    let source = root.join("PCN_template.xlsx");
+    let mut dest = PathBuf::from(destination);
+    dest.push(format!("{}.xlsx", name));
 
-    let source_file = Path::new(&source_file_path);
-    let new_file_name = destination.file_name().unwrap().to_str().unwrap();
+    fs::copy(&source, &dest).map(|_| ())
+}
 
-    let new_file_path = PathBuf::from(destination).join(format!(
-        "{}.{}",
-        new_file_name,
-        source_file.extension().unwrap().to_str().unwrap()
-    ));
-
-    if !source_file.exists() {
-        println!(
-            "Warning: Template file not found at \"{}\".",
-            root.display()
-        );
-        return;
-    }
-
-    if let Err(e) = fs::copy(source_file, &new_file_path) {
-        panic!("Error copying file: {:?}", e);
-    }
-
-    println!("Template copied successfully to {:?}", new_file_path);
+fn press_enter_to_continue() {
+    println!("Press enter to exit...");
+    let stdin = stdin();
+    let _ = stdin.read_line(&mut String::new());
 }
 
 fn press_enter_to_continue() {
