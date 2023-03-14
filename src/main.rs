@@ -9,9 +9,12 @@ fn create_pcn_case(pcn_path: &Path) -> PathBuf {
     stdout().flush().unwrap();
 
     let mut input = String::new();
-    stdin()
-        .read_line(&mut input)
-        .expect("Could not read user input.");
+    match stdin().read_line(&mut input) {
+        Ok(_) => (),
+        Err(error) => {
+            eprintln!("Error reading the input: {}", error);
+        }
+    }
 
     let pcn_name = input.trim();
 
@@ -52,9 +55,12 @@ fn create_or_find_pcn_directory() -> PathBuf {
         stdout().flush().unwrap();
 
         let mut input = String::new();
-        stdin()
-            .read_line(&mut input)
-            .expect("Could not read user input.");
+        match stdin().read_line(&mut input) {
+            Ok(_) => (),
+            Err(error) => {
+                eprintln!("Error reading the input: {}", error);
+            }
+        }
 
         match input.trim().to_lowercase().as_str() {
             "y" | "yes" => {
@@ -83,9 +89,12 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
     println!("Please enter the affected parts (comma-separated values): ");
 
     let mut input = String::new();
-    io::stdin()
-        .read_line(&mut input)
-        .expect("Failed to read input");
+    match stdin().read_line(&mut input) {
+        Ok(_) => (),
+        Err(error) => {
+            eprintln!("Error reading the input: {}", error);
+        }
+    }
 
     loop {
         let values: Vec<&str> = input.trim().split(',').map(|t| t.trim()).collect();
@@ -93,56 +102,48 @@ fn create_affected_parts_directory(pcn_case: &Path, pcn_root: &Path) {
 
         if unique_values.len() == values.len() {
             for value in values {
-                let affected_path = pcn_case.join(value);
-                if create_dir(&affected_path).is_ok() {
-                    println!(
-                        "PCN directory created successfully at \"{}\".",
-                        affected_path.display()
-                    );
-
-                    copy_rename_template(&pcn_root, &affected_path);
-                }
+                copy_rename_template(pcn_root, pcn_case, &value).unwrap();
             }
+
+            println!("Files created successfully at \"{}\".", pcn_case.display());
             break;
         } else {
             println!("There are duplicated affected parts. Try again with unique values.");
             input.clear();
-            io::stdin()
-                .read_line(&mut input)
-                .expect("Failed to read input");
+            match stdin().read_line(&mut input) {
+                Ok(_) => (),
+                Err(error) => {
+                    eprintln!("Error reading the input: {}", error);
+                }
+            }
         }
     }
 }
 
-fn copy_rename_template(root: &Path, destination: &Path) {
-    let source_file_path = root.join("PCN_template.xlsx");
+fn copy_rename_template(root: &Path, destination: &Path, name: &str) -> Result<(), io::Error> {
+    let source = root.join("PCN_template.xlsx");
+    let mut dest = PathBuf::from(destination);
+    dest.push(format!("{}.xlsx", name));
 
-    let source_file = Path::new(&source_file_path);
-    let new_file_name = destination.file_name().unwrap().to_str().unwrap();
+    match fs::copy(&source, &dest) {
+        Ok(_) => Ok(()),
 
-    let new_file_path = PathBuf::from(destination).join(format!(
-        "{}.{}",
-        new_file_name,
-        source_file.extension().unwrap().to_str().unwrap()
-    ));
-
-    if !source_file.exists() {
-        println!(
-            "Warning: Template file not found at \"{}\".",
-            root.display()
-        );
-        return;
+        Err(e) => {
+            println!("Error copying file: {}", e);
+            Err(e)
+        }
     }
+}
 
-    if let Err(e) = fs::copy(source_file, &new_file_path) {
-        panic!("Error copying file: {:?}", e);
-    }
-
-    println!("Template copied successfully to {:?}", new_file_path);
+fn press_enter_to_continue() {
+    println!("Press enter to exit...");
+    let stdin = stdin();
+    let _ = stdin.read_line(&mut String::new());
 }
 
 fn main() {
     let pcn_root = create_or_find_pcn_directory();
     let pcn_case = create_pcn_case(&pcn_root);
     create_affected_parts_directory(&pcn_case, &pcn_root);
+    press_enter_to_continue();
 }
